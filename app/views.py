@@ -63,8 +63,15 @@ class CalendarView(View):
             booking_hour = local_time.hour
             if (booking_hour in calendar) and (booking_date in calendar[booking_hour]):
                 calendar[booking_hour][booking_date] = False
-        
-        return render(request, 'app/calendar.html',{
+
+
+        import calendar as cal
+        cal_object = cal.LocaleHTMLCalendar(firstweekday=6, locale='ja_jp')
+        cal_object.cssclass_month = 'table table-bordered bg-light'
+        calendar_html = cal_object.formatmonth(start_date.year, start_date.month)
+
+
+        return render(request, 'app/calendar_month.html',{
             'staff_data': staff_data,
             'calendar': calendar,
             'days': days,
@@ -72,7 +79,8 @@ class CalendarView(View):
             'end_day': end_day,
             'before': days[0] - timedelta(days=7),
             'next': days[-1] + timedelta(days=1),
-            'today': today
+            'today': today,
+            'calendar_html': calendar_html,
         })        
         
         
