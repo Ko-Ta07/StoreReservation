@@ -23,6 +23,22 @@
 
     <div class="mb-3">
         <h1>予約カレンダー</h1>
+        <p>{{ target_date|date:"Y年n月" }}</p>
+    </div>
+
+    <div class="d-flex mb-2">
+        <div class="mx-3 mr-auto">
+            <a href="#" class="btn btn-warning">{{ previous_month }}月</a>
+        </div>
+        <div class="mx-3">
+            <a href="#" class="btn btn-warning">{{ next_month }}月</a>
+        </div>
+    </div>
+    
+    {{ calendar_html|safe }}
+
+    <div class="mb-3">
+        <h1>予約カレンダー</h1>
         <p>{{ start_day }}~{{ end_day }}</p>
     </div>
 
@@ -35,16 +51,6 @@
         </div>
     </div>
     <div class="">
-        {{ calendar_html|safe }}
-
-
-
-
-
-
-
-
-
 
         <table class="table table-bordered bg-light">
             <thead class="thead-light">
