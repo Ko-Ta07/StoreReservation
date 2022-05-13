@@ -1,4 +1,5 @@
 from django.shortcuts import render, get_object_or_404, redirect
+from django.urls import reverse
 from django.views.generic import View
 from .models import Store, Staff, Booking
 from datetime import datetime, date, timedelta, time
@@ -66,7 +67,8 @@ class CalendarView(View):
 
 
         target_date = start_date
-        calendar_object = MyLocaleHTMLCalendar(locale='ja_jp')
+        calendar_object = MyLocaleHTMLCalendar(locale='ja_jp', pk=self.kwargs['pk'])
+        calendar_object.set_pk(self.kwargs['pk'])
         calendar_html = calendar_object.formatmonth(target_date.year, target_date.month)
 
 
@@ -88,10 +90,22 @@ class CalendarView(View):
 import calendar
 class MyLocaleHTMLCalendar(calendar.LocaleHTMLCalendar):
     cssclass_month = 'table table-bordered bg-light'
+    theyear = 0
+    themonth = 0
 
     def __init__(self, *args, **kwargs):
+        self.pk = kwargs.pop('pk')
         super().__init__(*args, **kwargs)
         self.setfirstweekday(calendar.SUNDAY)
+
+    def set_pk(self, pk):
+        self.pk = pk
+
+    def formatmonth(self, theyear, themonth, withyear=True):
+        self.theyear = theyear
+        self.themonth = themonth
+        return super().formatmonth(theyear, themonth, withyear)
+
 
     def formatday(self, day, weekday):
         """
@@ -101,7 +115,9 @@ class MyLocaleHTMLCalendar(calendar.LocaleHTMLCalendar):
             # day outside month
             return '<td class="%s">&nbsp;</td>' % self.cssclass_noday
         else:
-            return '<td class="%s"><a href="#">%d</a></td>' % (self.cssclasses[weekday], day)
+            url = reverse('booking', kwargs={'pk': self.pk, 'year': self.theyear, 'month': self.themonth, 'day': day})
+            # return '<td class="%s"><a href="%s">%d</a></td>' % (self.cssclasses[weekday], url, day)
+            return f'<td class="{self.cssclasses[weekday]}"><a href="{url}">{day}</a></td>'
 
 class BookingView(View):
     def get(self, request, *args, **kwargs):
