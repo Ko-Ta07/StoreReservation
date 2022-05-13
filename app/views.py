@@ -63,8 +63,14 @@ class CalendarView(View):
             booking_hour = local_time.hour
             if (booking_hour in calendar) and (booking_date in calendar[booking_hour]):
                 calendar[booking_hour][booking_date] = False
-        
-        return render(request, 'app/calendar.html',{
+
+
+        target_date = start_date
+        calendar_object = MyLocaleHTMLCalendar(locale='ja_jp')
+        calendar_html = calendar_object.formatmonth(target_date.year, target_date.month)
+
+
+        return render(request, 'app/calendar_month.html',{
             'staff_data': staff_data,
             'calendar': calendar,
             'days': days,
@@ -72,10 +78,31 @@ class CalendarView(View):
             'end_day': end_day,
             'before': days[0] - timedelta(days=7),
             'next': days[-1] + timedelta(days=1),
-            'today': today
+            'today': today,
+            'target_date': target_date,
+            'previous_month': (target_date.replace(day=1) - timedelta(days=1)).month,
+            'next_month': (target_date.replace(day=1) + timedelta(days=31)).month,
+            'calendar_html': calendar_html,
         })        
         
-        
+import calendar
+class MyLocaleHTMLCalendar(calendar.LocaleHTMLCalendar):
+    cssclass_month = 'table table-bordered bg-light'
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.setfirstweekday(calendar.SUNDAY)
+
+    def formatday(self, day, weekday):
+        """
+        Return a day as a table cell.
+        """
+        if day == 0:
+            # day outside month
+            return '<td class="%s">&nbsp;</td>' % self.cssclass_noday
+        else:
+            return '<td class="%s"><a href="#">%d</a></td>' % (self.cssclasses[weekday], day)
+
 class BookingView(View):
     def get(self, request, *args, **kwargs):
         staff_data = Staff.objects.filter(id=self.kwargs['pk']).select_related('user').select_related('store')[0]
